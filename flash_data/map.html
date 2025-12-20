@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            height: 48px;
+            background: #222;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            flex-shrink: 0;
+        }
+        .topbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-right: 16px;
+        }
+        #map {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <a href="/">Main</a>
+    <a href="/map">Map</a>
+    <a href="/config">Config</a>
+</div>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([43.435949 , 5.215689], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+</script>
+</body>
+</html>

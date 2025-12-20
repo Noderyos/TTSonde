@@ -1,0 +1,53 @@
+menu "SX127x Configuration"
+	config GPIO_RANGE_MAX
+		int
+		default 33 if IDF_TARGET_ESP32
+		default 46 if IDF_TARGET_ESP32S2
+		default 48 if IDF_TARGET_ESP32S3
+		default 18 if IDF_TARGET_ESP32C2
+		default 19 if IDF_TARGET_ESP32C3
+		default 30 if IDF_TARGET_ESP32C6
+		default 27 if IDF_TARGET_ESP32H2
+
+	config SX_MOSI_GPIO
+		int "SX127x MOSI GPIO number"
+		range 0 GPIO_RANGE_MAX
+		default 27
+		help
+			GPIO number (IOxx) to SX127x MOSI.
+
+	config SX_MISO_GPIO
+		int "SX127x MISO GPIO number"
+		range 0 GPIO_RANGE_MAX
+		default 19
+		help
+			GPIO number (IOxx) to SX127x MISO.
+
+	config SX_SCLK_GPIO
+		int "SX127x SCLK GPIO number"
+		range 0 GPIO_RANGE_MAX
+		default 5
+		help
+			GPIO number (IOxx) to SX127x SCLK.
+
+	config SX_CS_GPIO
+		int "SX127x CS GPIO number"
+		range 0 GPIO_RANGE_MAX
+		default 18
+		help
+			GPIO number (IOxx) to SX127x CS.
+
+	config SX_DIO_GPIO
+		int "SX127x DIO GPIO number"
+		range 0 GPIO_RANGE_MAX
+		default 26
+		help
+			GPIO number (IOxx) to SX127x DIO.
+
+	config SX_RST_GPIO
+		int "SX127x RST GPIO number"
+		range 0 GPIO_RANGE_MAX
+		default 23
+		help
+			GPIO number (IOxx) to SX127x RST.
+endmenu

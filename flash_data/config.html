@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Config</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            height: 48px;
+            background: #222;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            flex-shrink: 0;
+        }
+        .topbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-right: 16px;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+        }
+        textarea {
+            flex: 1;
+            width: 100%;
+            resize: none;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button {
+            margin-top: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        #status {
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/">Main</a>
+    <a href="/map">Map</a>
+    <a href="/config">Config</a>
+</div>
+
+<div class="content">
+    <textarea id="configBox" placeholder="Loading /config.json..."></textarea>
+    <button id="uploadBtn">Upload</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    const box = document.getElementById('configBox');
+    const status = document.getElementById('status');
+
+    async function loadConfig() {
+        try {
+            const res = await fetch('/config.json');
+            if (!res.ok) {
+                throw new Error('HTTP ' + res.status);
+            }
+            box.value = await res.text();
+        } catch (e) {
+            box.value = '';
+            status.textContent = 'Failed to load config: ' + e.message;
+        }
+    }
+
+    async function uploadConfig() {
+        try {
+            const res = await fetch('/config.json', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: box.value
+            });
+            if (!res.ok) {
+                throw new Error('HTTP ' + res.status);
+            }
+            status.textContent = 'Upload successful';
+        } catch (e) {
+            status.textContent = 'Upload failed: ' + e.message;
+        }
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', uploadConfig);
+
+    loadConfig();
+</script>
+
+</body>
+</html>

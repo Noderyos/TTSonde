@@ -1,0 +1,41 @@
+{
+  "layout": {
+    "decode": {
+      "no_data": [
+        {"x": 0, "y": 0, "field": "text", "value": "Waiting data..."}
+      ],
+      "M20": [
+        {"x": 0, "y": 0, "field": "serial"},
+        {"x": 0, "y": 1, "field": "lat"},
+        {"x": 0, "y": 2, "field": "lon"},
+        {"x": 0, "y": 3, "field": "alt"},
+        {"x": 0, "y": 4, "field": "speed"},
+        {"x": 0, "y": 5, "field": "climb"}
+      ]
+    },
+    "wifi" : {
+      "connect": [
+        {"x": 5, "y": 0, "field": "text", "value": "WIFI"},
+        {"x": 0, "y": 1, "field": "text", "value": "Connecting to"},
+        {"x": 0, "y": 2, "field": "ssid"}
+      ],
+      "success": [
+        {"x": 5, "y": 0, "field": "text", "value": "WIFI"},
+        {"x": 0, "y": 1, "field": "text", "value": "Connected to"},
+        {"x": 0, "y": 2, "field": "ssid"},
+        {"x": 0, "y": 3, "field": "ip"}
+      ],
+      "retry": [
+        {"x": 5, "y": 0, "field": "text", "value": "WIFI"},
+        {"x": 0, "y": 1, "field": "text", "value": "Retrying"},
+        {"x": 0, "y": 2, "field": "ssid"}
+      ]
+    }
+  },
+  "wifi": {
+    "ap": {"ssid": "TT-Sonde", "password": "TT-Sonde", "type": "wpa"},
+    "networks": [
+      {"ssid": "NoderyosBox", "password": "NoderyosPassword", "type": "wpa"}
+    ]
+  }
+}

@@ -1,7 +1,5 @@
 # TT-Sonde
 
----
-
 ## Installation
 
 ### Requirements
@@ -28,15 +26,11 @@
    idf.py flash
    ```
 
----
-
 ## Supported Sondes
 
 The following radiosonde models are currently supported:
 
 * **M20**
-
----
 
 ## Configuration
 

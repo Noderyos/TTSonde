@@ -18,6 +18,32 @@ esp_err_t storage_init() {
     return esp_vfs_littlefs_register(&conf);
 }
 
+esp_err_t backup_file(const char *src_path, const char *dst_path) {
+    FILE *src = fopen(src_path, "rb");
+    if (!src) {
+        ESP_LOGE(TAG, "Could not open %s", src_path);
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    FILE *dst = fopen(dst_path, "wb");
+    if (!dst) {
+        ESP_LOGE(TAG, "Could not open %s", dst_path);
+        fclose(src);
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    char buffer[512];
+    size_t read;
+    while ((read = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+        fwrite(buffer, 1, read, dst);
+    }
+
+    fclose(src);
+    fclose(dst);
+
+    return ESP_OK;
+}
+
 char *read_entire_file(char *filename) {
     FILE *file = fopen(filename, "r");
     if (!file) return NULL;

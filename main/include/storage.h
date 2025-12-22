@@ -10,6 +10,7 @@
 
 esp_err_t storage_init();
 char *read_entire_file(char *filename);
+esp_err_t backup_file(const char *src_path, const char *dst_path);
 
 esp_err_t load_config();
 season *get_config();

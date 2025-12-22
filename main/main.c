@@ -156,7 +156,19 @@ esp_err_t init(void) {
     }
 
     ESP_LOGI(TAG, "Initializing config ..."); // Requires LittleFS
-    ERROR_CHECK(load_config());
+    if (load_config() != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to initialize config, loading backup");
+        if (backup_file(LITTLEFS_PATH"/config.bak", LITTLEFS_PATH"/config.json") != ESP_OK) {
+            ESP_LOGE(TAG, "Bailing out, you are on your own. Good luck.");
+            while (1) vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+        ESP_LOGI(TAG, "Backup file loaded, restarting ...");
+        esp_restart();
+    }
+
+    if (backup_file(LITTLEFS_PATH"/config.json", LITTLEFS_PATH"/config.bak") != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to create backup of config, don't break it.");
+    }
 
     ESP_LOGI(TAG, "Initializing UI ...");
     ui_init();

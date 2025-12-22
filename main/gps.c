@@ -126,7 +126,7 @@ static void gps_task(void *) {
         if (len <= 0) continue;
 
         for (ssize_t i = 0; i < len; i++) {
-            if (i > 0 && uart_buffer[i] == '\n') {
+            if (nmea_buf_pos > 0 && uart_buffer[i] == '\n') {
                 nmea_buf[nmea_buf_pos-1] = '\0';
                 nmea_buf[nmea_buf_pos] = '\0';
 

@@ -57,8 +57,6 @@ time_t nmea_to_timestamp(const char *date, const char *time) {
 
 
 esp_err_t parse_nmea(char *buf) {
-    ESP_LOGI(TAG, "NMEA %s", buf);
-
     if (buf[0] != '$' || strchr(buf, '*') == NULL) {
         return ESP_ERR_INVALID_RESPONSE;
     }
@@ -102,8 +100,6 @@ esp_err_t parse_nmea(char *buf) {
 
         if (fields[11][0] == 'W') gps_data.magvar = -gps_data.magvar;
 
-        ESP_LOGI(TAG, "TIME=%lld", gps_data.time);
-
     } else if (strcmp(fields[0], "GGA") == 0) {
         if (fields_count != 15) return ESP_ERR_INVALID_RESPONSE;
 
@@ -111,8 +107,6 @@ esp_err_t parse_nmea(char *buf) {
         gps_data.alt = strtof(fields[9], NULL);
 
         gps_data.sep = strtof(fields[11], NULL);
-
-        ESP_LOGI(TAG, "DOP: %.2f ALT = %.2f SEP = %.2f", gps_data.dop, gps_data.alt, gps_data.sep);
 
     } else if (strcmp(fields[0], "GSV") == 0) {
         //if (fields_count != 20) return ESP_ERR_INVALID_RESPONSE;

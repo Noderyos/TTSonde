@@ -6,20 +6,20 @@
 #include <freertos/FreeRTOS.h>
 #include <lwip/sockets.h>
 #include <sx127x.h>
-#include <wifi.h>
 
 #define SEASON_IMPLEMENTATION
 #define SEASON_SHORT
 #include "include/external/season.h"
 
 #include "gps.h"
+#include "http.h"
 #include "screen.h"
 #include "sonde/m20.h"
 #include "storage.h"
-#include "http.h"
 #include "ui/ui.h"
 #include "utils.h"
 #include "vbat.h"
+#include "wifi.h"
 
 #define TAG "ttsonde"
 
@@ -33,7 +33,12 @@ static const sonde_t *sondes[_SONDE_COUNT] = {
     [SONDE_M20] = &sonde_m20,
 };
 
-static sonde_model_t current_sonde = SONDE_M20;
+typedef struct {
+    sonde_model_t sonde;
+    uint32_t frequency;
+} radio_config_t;
+
+static QueueHandle_t radio_cfg_queue = NULL;
 
 void display_sonde_data(const sonde_data_t *data) {
     ESP_LOGI(TAG, "--- Sonde Data Report ---");
@@ -62,30 +67,42 @@ void display_sonde_data(const sonde_data_t *data) {
 }
 
 void radio_receiver_task(void *) {
-    ui_set_screen_deferred(UI_SCREEN_DECODING, 5000);
-
-    const sonde_t *sonde = sondes[current_sonde];
-
-    fsk_set_lna_gain(0);
-    int gain = fsk_get_lna_gain();
-    ESP_LOGI(TAG, "RX LNA Gain is %d", gain);
-
-    if (sonde->setup(405002000) < 0) {
-        ESP_LOGE(TAG, "sonde.setup(%s) failed.", sonde->name);
-        vTaskDelete(NULL);
-        return;
-    }
-
+    radio_config_t current = {SONDE_M20, 405200000};
     sonde_data_t sonde_data;
 
     int synced = 0;
+    int needs_setup = 1;
 
     while (1) {
-        vTaskDelay(pdMS_TO_TICKS(10));
 
-        ESP_LOGI(TAG, "sonde.receive() start at %ld", millis());
+        // New configuration requested
+        radio_config_t next_cfg;
+        if (xQueueReceive(radio_cfg_queue, &next_cfg, 0) == pdTRUE) {
+            current = next_cfg;
+            needs_setup = 1;
+            synced = 0;
+            ui_event_send(UI_EVENT_SONDE_LOST, NULL, 0);
+            ESP_LOGI(TAG, "New config received: Sonde %d, Freq %lu",
+                     current.sonde, current.frequency);
+        }
+
+        const sonde_t *sonde = sondes[current.sonde];
+
+        // Retry loading new setup
+        if (needs_setup) {
+            ESP_LOGI(TAG, "Running %s.setup(%lu)", sonde->name, current.frequency);
+            if (sonde->setup(current.frequency) < 0) {
+                ESP_LOGE(TAG, "%s.setup(%lu) failed.", sonde->name, current.frequency);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                continue;
+            }
+            needs_setup = 0;
+            ui_set_screen_deferred(UI_SCREEN_DECODING, 5000);
+        }
+
+        ESP_LOGI(TAG, "sonde.receive() start");
         int ret = sonde->receive(&sonde_data);
-        ESP_LOGI(TAG, "sonde.receive() exited");
+        ESP_LOGI(TAG, "sonde.receive() exit");
 
         if (ret < 0) {
             ESP_LOGE(TAG, "Invalid packet parsed");
@@ -94,7 +111,8 @@ void radio_receiver_task(void *) {
             display_sonde_data(&sonde_data);
             if (!synced) {
                 ui_event_send(UI_EVENT_SONDE_NAME,
-                    sondes[current_sonde]->name, sizeof(sondes[current_sonde]->name));
+                    sonde->name,
+                    strlen(sonde->name));
                 synced = 1;
             }
             ui_event_send(UI_EVENT_SONDE_DATA, &sonde_data, sizeof(sonde_data));
@@ -104,6 +122,15 @@ void radio_receiver_task(void *) {
             synced = 0;
         }
     }
+}
+
+void change_decoder(sonde_model_t sonde, uint32_t freq) {
+    radio_config_t cfg = {
+        .sonde = sonde,
+        .frequency = freq
+    };
+
+    xQueueSend(radio_cfg_queue, &cfg, portMAX_DELAY);
 }
 
 esp_err_t init(void) {
@@ -155,6 +182,7 @@ void app_main(void) {
         return;
     }
 
+    radio_cfg_queue = xQueueCreate(1, sizeof(radio_config_t));
     xTaskCreatePinnedToCore(
         radio_receiver_task, "radio_rx",
         4096, NULL, 5, NULL, 1

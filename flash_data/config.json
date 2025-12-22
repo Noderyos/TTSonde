@@ -17,18 +17,18 @@
       "connect": [
         {"x": 5, "y": 0, "field": "text", "value": "WIFI"},
         {"x": 0, "y": 1, "field": "text", "value": "Connecting to"},
-        {"x": 0, "y": 2, "field": "ssid"}
+        {"x": 0, "y": 2, "field": "dev_ssid"}
       ],
       "success": [
         {"x": 5, "y": 0, "field": "text", "value": "WIFI"},
         {"x": 0, "y": 1, "field": "text", "value": "Connected to"},
-        {"x": 0, "y": 2, "field": "ssid"},
-        {"x": 0, "y": 3, "field": "ip"}
+        {"x": 0, "y": 2, "field": "dev_ssid"},
+        {"x": 0, "y": 3, "field": "dev_ip"}
       ],
       "retry": [
         {"x": 5, "y": 0, "field": "text", "value": "WIFI"},
         {"x": 0, "y": 1, "field": "text", "value": "Retrying"},
-        {"x": 0, "y": 2, "field": "ssid"}
+        {"x": 0, "y": 2, "field": "dev_ssid"}
       ]
     }
   },

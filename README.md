@@ -86,6 +86,6 @@ Values are rendered using **printf-style format specifiers**, following standard
 
 > For example `%s car can go over %.2fkm/h` 
 > with `F1` and `3.1415` parameters 
-> will show `F1 can go over 3.14km/h`
+> will show `F1 car can go over 3.14km/h`
 
 I recommend you reading [this article](https://cplusplus.com/reference/cstdio/printf/) for further explanations.

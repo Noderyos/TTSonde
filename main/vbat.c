@@ -38,3 +38,23 @@ float get_vbat() {
 
     return (float)voltage_mv * 2.0 / 1000.0;
 }
+
+int get_bat_percentage() {
+    float vbat = get_vbat();
+    float a = 1308.61759,
+            b = -19750.76645,
+            c = 111507.84393,
+            d = -278956.60397,
+            e = 260830.7429;
+
+    // 100% ~ 4.12V, 0% ~ 3.4V
+    float percentage =
+            a * vbat * vbat * vbat * vbat +
+            b * vbat * vbat * vbat +
+            c * vbat * vbat +
+            d * vbat +
+            e;
+
+
+    return percentage > 100 ? 100 : percentage+0.5; // Upper-bound round
+}

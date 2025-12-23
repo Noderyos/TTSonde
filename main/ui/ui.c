@@ -119,6 +119,8 @@ static void render_field(season *el) {
 
     else if (SEASON_STRCMP(field_obj, "dev_vbat") == 0) {
         text_len = fmt("%.2f", get_vbat());
+    } else if (SEASON_STRCMP(field_obj, "dev_percent") == 0) {
+        text_len = fmt("%3d%%", get_bat_percentage());
     } else if (SEASON_STRCMP(field_obj, "dev_ssid") == 0) {
         text_len = fmt("%s", ssid);
     } else if (SEASON_STRCMP(field_obj, "dev_ip") == 0) {
@@ -138,9 +140,9 @@ static void render_field(season *el) {
     } else if (SEASON_STRCMP(field_obj, "dev_time") == 0) {
         text_len = strftime(text, TEXT_LEN, "%Y-%m-%d %H:%M:%S", localtime(&gps_data.time));
     } else if (SEASON_STRCMP(field_obj, "dev_magvar") == 0) {
-        text_len = fmt(text, TEXT_LEN, "%.1f", gps_data.magvar);
+        text_len = fmt("%.1f", gps_data.magvar);
     } else if (SEASON_STRCMP(field_obj, "dev_sep") == 0) {
-        text_len = fmt(text, TEXT_LEN, "%.1f", gps_data.sep);
+        text_len = fmt("%.1f", gps_data.sep);
     }
 
     ssd1306_display_text_pro(&scr_dev, x, y, text, text_len, 0);

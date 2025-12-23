@@ -65,6 +65,7 @@ If you are unfamiliar with printf-style format string, check below.
 | dev_ssid    | char* |                     | TT-Sonde Wi-Fi SSID                            |
 | dev_ip      | char* |                     | TT-Sonde Wi-Fi IP address                      |
 | dev_vbat    | float | `%.2f`              | TT-Sonde battery voltage                       |
+| dev_percent | int   | `%3d%%`             | TT-Sonde battery percentage (based on voltage) |
 | dev_time    | long  | `%Y-%m-%d %H:%M:%S` | TT-Sonde timestamp (formatted with `strftime`) |
 | dev_lat     | float | `%.5fN`             | TT-Sonde GPS latitude                          |
 | dev_lon     | float | `%.5fE`             | TT-Sonde GPS longitude                         |

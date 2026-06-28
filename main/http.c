@@ -10,6 +10,9 @@
 #include "utils.h"
 #include <lwip/api.h>
 
+#include "sonde.h"
+#include "main.h"
+
 #define TAG "ttsonde-http"
 
 enum http_method {
@@ -37,6 +40,33 @@ struct http_request {
 
 char http_buffer[8192] = {0};
 
+void send_500(struct netconn *conn) {
+    const char http_500[] =
+            "HTTP/1.1 500 Internal Server Error\r\nContent-type: text/html\r\n\r\n500 Internal Server Error";
+    netconn_write(conn, http_500, sizeof(http_500) - 1, NETCONN_NOFLAG);
+}
+
+static char temp_value[32];
+static char *temp_get_field(char *form, char *key) {
+    size_t key_len = strlen(key);
+    while (*form) {
+        char *next = strchr(form, '&');
+        if (form[key_len] == '=' && strncmp(form, key, key_len) == 0) {
+            form = &form[key_len+1];
+
+            if (next == NULL) next = form + strlen(form);
+            if (next-form > 31) return NULL;
+
+            strncpy(temp_value, form, next-form);
+            temp_value[next-form] = '\0';
+            return temp_value;
+        }
+        if (next == NULL) break;
+        form = next + 1;
+    }
+    return NULL;
+}
+
 void handle_index(struct netconn *conn, struct http_request) {
     const char hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
     netconn_write(conn, hdr, sizeof(hdr) - 1, NETCONN_NOFLAG);
@@ -44,11 +74,49 @@ void handle_index(struct netconn *conn, struct http_request) {
     FILE *f = fopen(LITTLEFS_PATH"/index.html", "r");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open index.html");
+        send_500(conn);
         return;
     }
     http_buffer[fread(http_buffer, 1, sizeof(http_buffer) - 1, f)] = 0;
     fclose(f);
     netconn_write(conn, http_buffer, strlen(http_buffer), NETCONN_NOFLAG);
+}
+
+void handle_index_post(struct netconn *conn, struct http_request req) {
+
+    char *freq_str = temp_get_field(req.data, "freq");
+    if (freq_str == NULL) {
+        ESP_LOGE(TAG, "Failed to get 'freq' field");
+        send_500(conn);
+        return;
+    }
+    long freq = strtol(freq_str, NULL, 10);
+
+    char *sonde = temp_get_field(req.data, "sonde");
+    if (sonde == NULL) {
+        ESP_LOGE(TAG, "Failed to get 'sonde' field");
+        send_500(conn);
+        return;
+    }
+
+    sonde_model_t model = _SONDE_COUNT;
+
+    for (size_t i = 0; i < sonde_names_length; i++) {
+        if (strcmp(sonde_names[i].name, sonde) == 0) {
+            model = sonde_names[i].model;
+            break;
+        }
+    }
+    if (model == _SONDE_COUNT) {
+        ESP_LOGE(TAG, "Cannot find sonde '%s'", sonde);
+        send_500(conn);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Changing decoder");
+    change_decoder(model, freq);
+
+    handle_index(conn, req);
 }
 
 void handle_map(struct netconn *conn, struct http_request) {
@@ -58,6 +126,7 @@ void handle_map(struct netconn *conn, struct http_request) {
     FILE *f = fopen(LITTLEFS_PATH"/map.html", "r");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open map.html");
+        send_500(conn);
         return;
     }
     http_buffer[fread(http_buffer, 1, sizeof(http_buffer) - 1, f)] = 0;
@@ -72,6 +141,7 @@ void handle_config(struct netconn *conn, struct http_request) {
     FILE *f = fopen(LITTLEFS_PATH"/config.html", "r");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open config.html");
+        send_500(conn);
         return;
     }
     http_buffer[fread(http_buffer, 1, sizeof(http_buffer) - 1, f)] = 0;
@@ -86,6 +156,7 @@ void handle_config_get(struct netconn *conn, struct http_request) {
     FILE *f = fopen(LITTLEFS_PATH"/config.json", "r");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open config.json");
+        send_500(conn);
         return;
     }
     http_buffer[fread(http_buffer, 1, sizeof(http_buffer) - 1, f)] = 0;
@@ -99,6 +170,7 @@ void handle_config_post(struct netconn *conn, struct http_request req) {
     FILE *f = fopen(LITTLEFS_PATH"/config.json", "w");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open config.json");
+        send_500(conn);
         return;
     }
     fwrite(req.data, 1, req.data_len, f);
@@ -114,6 +186,7 @@ static struct {
     void (*handler)(struct netconn *conn, struct http_request req);
 } pages[] = {
     {"/", HTTP_GET, handle_index},
+    {"/", HTTP_POST, handle_index_post},
     {"/map", HTTP_GET, handle_map},
     {"/config", HTTP_GET, handle_config},
 
@@ -187,7 +260,7 @@ esp_err_t parse_http_request(struct netconn *conn, struct netbuf **inbuf, struct
 
     if (req->data_len == 0) return ESP_OK;
 
-    char *body_buf = malloc(req->data_len);
+    char *body_buf = malloc(req->data_len+1);
     size_t received = 0;
 
     size_t already = buflen - (body - buf);
@@ -213,6 +286,7 @@ esp_err_t parse_http_request(struct netconn *conn, struct netbuf **inbuf, struct
 
     req->data = body_buf;
     req->data_len = received;
+    req->data[req->data_len] = 0;
 
     return ESP_OK;
 }

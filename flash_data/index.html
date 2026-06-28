@@ -38,7 +38,17 @@
 
 <div class="content">
     <h1>Main page</h1>
-    <p>Placeholder. To be implemented.</p>
+    <form action="/" method="POST">
+        <label for="sonde">Radiosonde</label>
+        <select id="sonde" name="sonde">
+            <option value="m20">M20</option>
+        </select>
+        <br>
+        <label for="freq">Frequency</label>
+        <input type="number" min="400000000" max="500000000" value="405000000" name="freq" id="freq">
+        <br>
+        <input type="submit" value="Update">
+    </form>
 </div>
 
 </body>

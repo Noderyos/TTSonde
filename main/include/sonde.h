@@ -31,6 +31,14 @@ typedef enum sonde_model {
 	_SONDE_COUNT
 } sonde_model_t;
 
+static struct {
+	char *name;
+	sonde_model_t model;
+} sonde_names[] = {
+	{"m20", SONDE_M20}
+};
+#define sonde_names_length (sizeof(sonde_names)/sizeof(*sonde_names))
+
 typedef struct {
 	char name[16];
 

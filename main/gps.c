@@ -55,7 +55,7 @@ time_t nmea_to_timestamp(const char *date, const char *time) {
     return mktime(&tm);
 }
 
-
+static struct gps_data_t gps_data;
 esp_err_t parse_nmea(char *buf) {
     if (buf[0] != '$' || strchr(buf, '*') == NULL) {
         return ESP_ERR_INVALID_RESPONSE;
@@ -67,8 +67,6 @@ esp_err_t parse_nmea(char *buf) {
 
     char *tlk = &buf[1];
     char *sentence = &tlk[2];
-
-    struct gps_data_t gps_data;
 
     char *fields[32];
     size_t fields_count = nmea_tokenise(sentence, fields, 32);
@@ -88,7 +86,7 @@ esp_err_t parse_nmea(char *buf) {
 
         float lon = strtof(fields[5], NULL);
         int lon_deg = ((int)lon/100);
-        int lon_min = lat-(lon_deg*100);
+        int lon_min = lon-(lon_deg*100);
         int lon_sec = 100*(lon-(lon_deg*100+lon_min));
         gps_data.lon = lon_deg + lon_min/60.f + lon_sec/3600.f;
 
@@ -112,8 +110,8 @@ esp_err_t parse_nmea(char *buf) {
         //if (fields_count != 20) return ESP_ERR_INVALID_RESPONSE;
 
     }
-
-    ui_event_send(UI_EVENT_GPS_DATA, &gps_data, sizeof(gps_data));
+    if (gps_data.lat /* Check RMC */ && gps_data.alt /* Check GGA */)
+        ui_event_send(UI_EVENT_GPS_DATA, &gps_data, sizeof(gps_data));
 
     return ESP_OK;
 }

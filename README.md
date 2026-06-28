@@ -75,6 +75,7 @@ If you are unfamiliar with printf-style format string, check below.
 | dev_dop     | float | `%.1f`              | TT-Sonde GPS dilution of precision             |
 | dev_magvar  | float | `%.1f`              | TT-Sonde GPS magnetic declination              |
 | dev_sep     | float | `%.1f`              | TT-Sonde GPS geoidal separation                |
+| distance    | float | `%dm`               | TT-Sonde distance to sonde                     |
 
 ### Value Formatting
 

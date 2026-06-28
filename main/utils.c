@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <font8x8_basic.h>
+#include <math.h>
 #include <ssd1306.h>
 #include <string.h>
 #include <sys/time.h>
@@ -59,4 +60,16 @@ void ssd1306_display_text_pro(SSD1306_t * dev, int x, int y,
         ssd1306_display_image(dev, y, seg, image, 8);
         seg = seg + 8;
     }
+}
+
+#define hav(theta) (sin((theta)/2)*sin((theta)/2))
+#define rad(deg) ((deg) * M_PI / 180.0)
+
+double distance(double start_lat, double start_lon, double end_lat, double end_lon) {
+    static const double EARTH_RADIUS = 6371000.f;
+    double lat1 = rad(start_lat);
+    double lat2 = rad(end_lat);
+    double dlat = rad(end_lat - start_lat);
+    double dlon = rad(end_lon - start_lon);
+    return 2*EARTH_RADIUS*asin(sqrt( hav(dlat) + cos(lat1)*cos(lat2)*hav(dlon) ));
 }

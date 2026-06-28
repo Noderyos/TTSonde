@@ -143,6 +143,9 @@ static void render_field(season *el) {
         text_len = fmt("%.1f", gps_data.magvar);
     } else if (SEASON_STRCMP(field_obj, "dev_sep") == 0) {
         text_len = fmt("%.1f", gps_data.sep);
+    } else if (SEASON_STRCMP(field_obj, "distance") == 0) {
+        text_len = fmt("%dm",
+            (int)distance(sonde_data.lat, sonde_data.lon, gps_data.lat, gps_data.lon));
     }
 
     ssd1306_display_text_pro(&scr_dev, x, y, text, text_len, 0);

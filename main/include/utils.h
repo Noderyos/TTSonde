@@ -39,4 +39,6 @@ inline int16_t le_i16(uint8_t d[2]){return d[0]|(d[1]<<8);}
 void ssd1306_display_text_pro(SSD1306_t * dev, int x, int y,
     const char *text, int text_len, bool invert);
 
+double distance(double start_lat, double start_lon, double end_lat, double end_lon);
+
 #endif

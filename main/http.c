@@ -184,7 +184,6 @@ esp_err_t parse_http_request(struct netconn *conn, struct netbuf **inbuf, struct
     }
 
     req->data = NULL;
-    req->data_len = 0;
 
     if (req->data_len == 0) return ESP_OK;
 
